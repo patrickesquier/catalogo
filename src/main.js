@@ -1,157 +1,195 @@
 import { createClient } from '@supabase/supabase-js'
 
-const WA='5581994629486';
-let sb=null,produtos=[],adminLogged=false,catAtiva='Todos',selectedFiles=[];
+const WA = '5581994629486';
+let sb = null, produtos = [], adminLogged = false, catAtiva = 'Todos', selectedFiles = [];
 
-function boot(){
+function boot() {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if(!url || !key) {
+  if (!url || !key) {
     console.error('Supabase URL ou Key não encontradas no .env');
     return;
   }
   sb = createClient(url, key);
-  carregar().then(()=>route());
+  carregar().then(() => route());
 }
 
-function route(){
-  if(location.hash==='#admin'){adminLogged?showAdmin():showLogin()}
+function route() {
+  if (location.hash === '#admin') { adminLogged ? showAdmin() : showLogin() }
   else goPublic();
 }
 
-window.addEventListener('hashchange',route);
+window.addEventListener('hashchange', route);
 
-function goPublic(){
-  location.hash='';show('view-public');
+function goPublic() {
+  location.hash = ''; show('view-public');
   const nr = G('nav-right');
   if (nr) {
-    nr.innerHTML=`<button class="btn btn-ghost btn-sm" id="btn-goto-admin">🔐 Admin</button>`;
-    G('btn-goto-admin').addEventListener('click', () => { location.hash='#admin'; });
+    nr.innerHTML = `<button class="btn btn-ghost btn-sm" id="btn-goto-admin">🔐 Admin</button>`;
+    G('btn-goto-admin').addEventListener('click', () => { location.hash = '#admin'; });
   }
-  renderPublic(produtos);buildCats();
+  renderPublic(produtos); buildCats();
 }
 
-function showLogin(){
+function showLogin() {
   show('view-login');
-  G('nav-right').innerHTML=`<button class="btn btn-ghost btn-sm" id="btn-back">← Voltar</button>`;
+  G('nav-right').innerHTML = `<button class="btn btn-ghost btn-sm" id="btn-back">← Voltar</button>`;
   G('btn-back').addEventListener('click', goPublic);
 }
 
-function showAdmin(){
+function showAdmin() {
   show('view-admin');
-  G('nav-right').innerHTML=`<span style="font-size:12px;color:var(--text2);padding:0 4px">● Admin</span>`;
+  G('nav-right').innerHTML = `<span style="font-size:12px;color:var(--text2);padding:0 4px">● Admin</span>`;
   renderAdmin();
 }
 
-function doLogin(){
+function doLogin() {
   const pass = G('login-pass').value;
   const stored = import.meta.env.VITE_ADMIN_PASSWORD;
-  
-  if(pass === stored){
-    adminLogged=true;G('login-err').style.display='none';G('login-pass').value='';showAdmin();
-  }else{G('login-err').style.display='block'}
+
+  if (pass === stored) {
+    adminLogged = true; G('login-err').style.display = 'none'; G('login-pass').value = ''; showAdmin();
+  } else { G('login-err').style.display = 'block' }
 }
 
-function logoutAdmin(){adminLogged=false;goPublic()}
+function logoutAdmin() { adminLogged = false; goPublic() }
 
-async function carregar(){
-  if(!sb)return;
-  const{data,error}=await sb.from('produtos').select('*').order('created_at',{ascending:false});
-  if(error){toast('Erro ao carregar: '+error.message,'err');return}
-  produtos=data||[];
+async function carregar() {
+  if (!sb) return;
+  const { data, error } = await sb.from('produtos').select('*').order('created_at', { ascending: false });
+  if (error) { toast('Erro ao carregar: ' + error.message, 'err'); return }
+  produtos = data || [];
 }
 
-function buildCats(){
-  const cats=['Todos',...new Set(produtos.map(p=>p.categoria).filter(Boolean))];
-  G('pub-cats').innerHTML=cats.map(c=>`<button class="cat-btn${c===catAtiva?' active':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+function buildCats() {
+  const cats = ['Todos', ...new Set(produtos.map(p => p.categoria).filter(Boolean))];
+  G('pub-cats').innerHTML = cats.map(c => `<button class="cat-btn${c === catAtiva ? ' active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
   document.querySelectorAll('.cat-btn').forEach(btn => {
     btn.addEventListener('click', (e) => setCat(e.target.dataset.cat));
   });
 }
-function setCat(c){catAtiva=c;buildCats();filtrarPublico()}
-function filtrarPublico(){
-  const q=G('pub-search').value.toLowerCase();
-  const lista=produtos.filter(p=>{
-    const mc=catAtiva==='Todos'||(p.categoria||'')===catAtiva;
-    const mq=p.nome.toLowerCase().includes(q)||(p.descricao||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q);
-    return mc&&mq;
+function setCat(c) { catAtiva = c; buildCats(); filtrarPublico() }
+function filtrarPublico() {
+  const q = G('pub-search').value.toLowerCase();
+  const lista = produtos.filter(p => {
+    const mc = catAtiva === 'Todos' || (p.categoria || '') === catAtiva;
+    const mq = p.nome.toLowerCase().includes(q) || (p.descricao || '').toLowerCase().includes(q) || (p.categoria || '').toLowerCase().includes(q);
+    return mc && mq;
   });
   renderPublic(lista);
 }
 
-function thumb(p, idx=0){
+function thumb(p, idx = 0) {
   const img = (p.imagens && p.imagens.length > idx) ? p.imagens[idx] : p.imagem_url;
   return img
-    ?`<img src="${esc(img)}" alt="${esc(p.nome)}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\'><rect x=\\'2\\' y=\\'3\\' width=\\'20\\' height=\\'14\\' rx=\\'2\\'/><path d=\\'M8 21h8M12 17v4\\'/></svg>'">`
-    :`<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
+    ? `<img src="${esc(img)}" alt="${esc(p.nome)}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\'><rect x=\\'2\\' y=\\'3\\' width=\\'20\\' height=\\'14\\' rx=\\'2\\'/><path d=\\'M8 21h8M12 17v4\\'/></svg>'">`
+    : `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
 }
 
-window.comprar = function(nome,preco){
-  const msg=encodeURIComponent(`Olá! Me interessei pelo dispositivo: *${nome}* — R$ ${preco}. Poderia me dar mais informações?`);
-  window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
+window.comprar = function (nome, preco) {
+  const msg = encodeURIComponent(`Olá! Me interessei pelo dispositivo: *${nome}* — R$ ${preco}. Poderia me dar mais informações?`);
+  window.open(`https://wa.me/${WA}?text=${msg}`, '_blank');
 }
 
-window.editarProduto = function(pid){
-  const p=produtos.find(x=>x.id===pid);if(!p)return;
-  G('edit-id').value=p.id;G('f-nome').value=p.nome;G('f-preco').value=p.preco;
-  G('f-desc').value=p.descricao||'';G('f-cat').value=p.categoria||'';
+window.editarProduto = function (pid) {
+  const p = produtos.find(x => x.id === pid); if (!p) return;
+  G('edit-id').value = p.id; G('f-nome').value = p.nome; G('f-preco').value = p.preco;
+  G('f-desc').value = p.descricao || ''; G('f-cat').value = p.categoria || '';
   selectedFiles = [];
-  renderPreviews((p.imagens||[]).map(url=>({url})));
-  G('form-title').textContent='Editar Produto';G('f-btn-txt').textContent='Atualizar';
-  G('cancel-wrap').style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+  renderPreviews((p.imagens || []).map(url => ({ url })));
+  G('form-title').textContent = 'Editar Produto'; G('f-btn-txt').textContent = 'Atualizar';
+  G('cancel-wrap').style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-window.excluir = async function(pid){
-  if(!confirm('Remover este produto?'))return;
-  const{error}=await sb.from('produtos').delete().eq('id',pid);
-  if(error){toast('Erro: '+error.message,'err');return}
-  toast('Removido','ok');await carregar();renderAdmin();
+window.excluir = async function (pid) {
+  if (!confirm('Remover este produto?')) return;
+  const { error } = await sb.from('produtos').delete().eq('id', pid);
+  if (error) { toast('Erro: ' + error.message, 'err'); return }
+  toast('Removido', 'ok'); await carregar(); renderAdmin();
 }
 
-function renderPublic(lista){
-  const g=G('pub-grid');
-  if(!lista.length){g.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>Nenhum produto encontrado.</p></div>`;return}
-  g.innerHTML=lista.map((p,i)=>`
-    <div class="product-card" style="animation-delay:${i*.05}s">
-      <div class="card-thumb" onclick="openGallery('${p.id}')" style="cursor:pointer">${thumb(p)}</div>
+function renderPublic(lista) {
+  const g = G('pub-grid');
+  if (!lista.length) { g.innerHTML = `<div class="empty"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>Nenhum produto encontrado.</p></div>`; return }
+  g.innerHTML = lista.map((p, i) => `
+    <div class="product-card" style="animation-delay:${i * .05}s" onclick="openProductModal('${p.id}')">
+      <div class="card-thumb" style="cursor:pointer">${thumb(p)}</div>
       <div class="card-body">
-        ${p.categoria?`<div class="card-cat">${esc(p.categoria)}</div>`:''}
-        <div class="card-name">${esc(p.nome)}</div>
-        ${p.descricao?`<div class="card-desc">${esc(p.descricao)}</div>`:''}
-        <div class="card-row">
-          <div class="card-price"><sup>R$</sup>${fmt(p.preco)}</div>
-          ${p.imagens && p.imagens.length > 1 ? `<span class="badge" onclick="openGallery('${p.id}')" style="cursor:pointer">+${p.imagens.length - 1} fotos</span>` : ''}
+        <div class="info">
+          ${p.categoria ? `<div class="card-cat">${esc(p.categoria)}</div>` : ''}
+          <div class="card-name">${esc(p.nome)}</div>
+          ${p.descricao ? `<div class="card-desc">${esc(p.descricao)}</div>` : ''}
+          <div class="card-row">
+            <div class="card-price"><sup>R$</sup>${fmt(p.preco)}</div>
+            ${p.imagens && p.imagens.length > 1 ? `<span class="badge">+${p.imagens.length - 1} fotos</span>` : ''}
+          </div>
         </div>
-        <button class="btn-wa" onclick="comprar('${esc(p.nome)}','${fmt(p.preco)}')">
+        <button class="btn-wa" onclick="event.stopPropagation();comprar('${esc(p.nome)}','${fmt(p.preco)}')">
           Comprar via WhatsApp
         </button>
       </div>
     </div>`).join('');
 }
 
-window.openGallery = function(pid){
+window.openProductModal = function (pid) {
   const p = produtos.find(x => x.id === pid);
-  if (!p || !p.imagens || !p.imagens.length) return;
-  const mod = G('gallery-modal');
-  const cont = G('modal-gallery-content');
-  cont.innerHTML = p.imagens.map(url => `<img src="${esc(url)}">`).join('');
+  if (!p) return;
+
+  const mod = G('product-modal');
+  G('modal-name').textContent = p.nome;
+  G('modal-cat').textContent = p.categoria || '';
+  G('modal-price').innerHTML = `<sup>R$</sup>${fmt(p.preco)}`;
+  G('modal-desc').textContent = p.descricao || 'Sem descrição disponível.';
+
+  const images = p.imagens && p.imagens.length ? p.imagens : [p.imagem_url].filter(Boolean);
+
+  const mainImgWrap = G('modal-main-img');
+  const thumbsGrid = G('modal-thumbnails');
+  const actionWrap = G('modal-action-wrap');
+
+  if (images.length > 0) {
+    mainImgWrap.innerHTML = `<img src="${esc(images[0])}" id="modal-main-img-el">`;
+    thumbsGrid.innerHTML = images.map((url, i) => `
+      <div class="thumb-item${i === 0 ? ' active' : ''}" onclick="setModalMainImg('${esc(url)}', this)">
+        <img src="${esc(url)}">
+      </div>
+    `).join('');
+  } else {
+    mainImgWrap.innerHTML = thumb(p);
+    thumbsGrid.innerHTML = '';
+  }
+
+  actionWrap.innerHTML = `
+    <button class="btn-wa" onclick="comprar('${esc(p.nome)}','${fmt(p.preco)}')">
+      Comprar via WhatsApp
+    </button>
+  `;
+
   mod.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
-window.closeGallery = function(){
-  G('gallery-modal').classList.add('hidden');
+window.setModalMainImg = function (url, el) {
+  G('modal-main-img-el').src = url;
+  document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
 }
 
-function renderAdmin(){
-  G('adm-count').textContent=produtos.length;
-  const l=G('adm-list');
-  if(!produtos.length){l.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>Nenhum produto ainda.</p></div>`;return}
-  l.innerHTML=produtos.map((p,i)=>`
-    <div class="admin-item" style="animation-delay:${i*.04}s">
+window.closeProductModal = function () {
+  G('product-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function renderAdmin() {
+  G('adm-count').textContent = produtos.length;
+  const l = G('adm-list');
+  if (!produtos.length) { l.innerHTML = `<div class="empty"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>Nenhum produto ainda.</p></div>`; return }
+  l.innerHTML = produtos.map((p, i) => `
+    <div class="admin-item" style="animation-delay:${i * .04}s">
       <div class="admin-thumb">${thumb(p)}</div>
       <div class="admin-info">
         <div class="name">${esc(p.nome)}</div>
-        <div class="meta">${p.categoria||'Sem categoria'}</div>
+        <div class="meta">${p.categoria || 'Sem categoria'}</div>
       </div>
       <div class="admin-price">R$ ${fmt(p.preco)}</div>
       <div class="admin-btns">
@@ -161,7 +199,7 @@ function renderAdmin(){
     </div>`).join('');
 }
 
-async function uploadFiles(){
+async function uploadFiles() {
   const urls = [];
   for (const file of selectedFiles) {
     if (file.url && !file.file) { urls.push(file.url); continue; }
@@ -175,47 +213,47 @@ async function uploadFiles(){
   return urls;
 }
 
-async function salvar(){
-  const eid=G('edit-id').value,nome=G('f-nome').value.trim(),preco=parseFloat(G('f-preco').value),
-        descricao=G('f-desc').value.trim(),categoria=G('f-cat').value.trim();
-  if(!nome){toast('Informe o nome','err');return}
-  if(isNaN(preco)||preco<0){toast('Preço inválido','err');return}
-  
+async function salvar() {
+  const eid = G('edit-id').value, nome = G('f-nome').value.trim(), preco = parseFloat(G('f-preco').value),
+    descricao = G('f-desc').value.trim(), categoria = G('f-cat').value.trim();
+  if (!nome) { toast('Informe o nome', 'err'); return }
+  if (isNaN(preco) || preco < 0) { toast('Preço inválido', 'err'); return }
+
   try {
     G('btn-save').disabled = true;
     G('f-btn-txt').textContent = 'Enviando fotos...';
-    
+
     const imagens = await uploadFiles();
-    const payload={nome,preco,descricao,categoria,imagens};
-    
+    const payload = { nome, preco, descricao, categoria, imagens };
+
     let error;
-    if(eid){({error}=await sb.from('produtos').update(payload).eq('id',eid))}
-    else{({error}=await sb.from('produtos').insert(payload))}
-    
-    if(error) throw error;
-    
-    toast(eid?'Atualizado!':'Produto adicionado!','ok');
-    resetForm();await carregar();renderAdmin();
+    if (eid) { ({ error } = await sb.from('produtos').update(payload).eq('id', eid)) }
+    else { ({ error } = await sb.from('produtos').insert(payload)) }
+
+    if (error) throw error;
+
+    toast(eid ? 'Atualizado!' : 'Produto adicionado!', 'ok');
+    resetForm(); await carregar(); renderAdmin();
   } catch (err) {
-    toast('Erro: '+err.message,'err');
+    toast('Erro: ' + err.message, 'err');
   } finally {
     G('btn-save').disabled = false;
     G('f-btn-txt').textContent = eid ? 'Atualizar' : 'Salvar Produto';
   }
 }
 
-function resetForm(){
-  ['edit-id','f-nome','f-preco','f-desc','f-cat','f-images'].forEach(x=>{
+function resetForm() {
+  ['edit-id', 'f-nome', 'f-preco', 'f-desc', 'f-cat', 'f-images'].forEach(x => {
     const el = G(x);
-    if (el) el.value='';
+    if (el) el.value = '';
   });
   selectedFiles = [];
   renderPreviews([]);
-  G('form-title').textContent='Novo Produto';G('f-btn-txt').textContent='Salvar Produto';
-  G('cancel-wrap').style.display='none';
+  G('form-title').textContent = 'Novo Produto'; G('f-btn-txt').textContent = 'Salvar Produto';
+  G('cancel-wrap').style.display = 'none';
 }
 
-function handleFiles(e){
+function handleFiles(e) {
   const files = Array.from(e.target.files);
   files.forEach(file => {
     const reader = new FileReader();
@@ -227,7 +265,7 @@ function handleFiles(e){
   });
 }
 
-function renderPreviews(initial = null){
+function renderPreviews(initial = null) {
   if (initial) {
     selectedFiles = initial.map(img => ({ url: img.url, preview: img.url }));
   }
@@ -244,44 +282,44 @@ function renderPreviews(initial = null){
   `).join('');
 }
 
-window.setCover = function(i){
+window.setCover = function (i) {
   const item = selectedFiles.splice(i, 1)[0];
   selectedFiles.unshift(item);
   renderPreviews();
 }
 
-window.removeFile = function(i){
+window.removeFile = function (i) {
   selectedFiles.splice(i, 1);
   renderPreviews();
 }
 
-function show(v){['view-public','view-login','view-admin'].forEach(x=>G(x).classList[x===v?'remove':'add']('hidden'))}
-function fmt(v){return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function G(x){return document.getElementById(x)}
+function show(v) { ['view-public', 'view-login', 'view-admin'].forEach(x => G(x).classList[x === v ? 'remove' : 'add']('hidden')) }
+function fmt(v) { return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
+function G(x) { return document.getElementById(x) }
 
 let _tt;
-window.toast = function(msg,type='ok'){
-  const t=G('toast');t.textContent=(type==='ok'?'✓ ':'⚠ ')+msg;
-  t.className='show '+type;clearTimeout(_tt);_tt=setTimeout(()=>t.className='',3000);
+window.toast = function (msg, type = 'ok') {
+  const t = G('toast'); t.textContent = (type === 'ok' ? '✓ ' : '⚠ ') + msg;
+  t.className = 'show ' + type; clearTimeout(_tt); _tt = setTimeout(() => t.className = '', 3000);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   boot();
   G('logo-btn').addEventListener('click', goPublic);
   G('pub-search').addEventListener('input', filtrarPublico);
-  if(G('login-pass')) G('login-pass').addEventListener('keydown',(e)=>e.key==='Enter'&&doLogin());
+  if (G('login-pass')) G('login-pass').addEventListener('keydown', (e) => e.key === 'Enter' && doLogin());
   G('btn-login').addEventListener('click', doLogin);
   G('btn-logout').addEventListener('click', logoutAdmin);
   G('btn-save').addEventListener('click', salvar);
   G('btn-cancel').addEventListener('click', resetForm);
-  if(G('f-images')) G('f-images').addEventListener('change', handleFiles);
-  
+  if (G('f-images')) G('f-images').addEventListener('change', handleFiles);
+
   const da = G('drop-area');
   if (da) {
-    ['dragenter','dragover','dragleave','drop'].forEach(n => da.addEventListener(n, e => {e.preventDefault();e.stopPropagation()}));
-    ['dragenter','dragover'].forEach(n => da.addEventListener(n, () => da.classList.add('highlight')));
-    ['dragleave','drop'].forEach(n => da.addEventListener(n, () => da.classList.remove('highlight')));
-    da.addEventListener('drop', e => handleFiles({target:{files:e.dataTransfer.files}}));
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(n => da.addEventListener(n, e => { e.preventDefault(); e.stopPropagation() }));
+    ['dragenter', 'dragover'].forEach(n => da.addEventListener(n, () => da.classList.add('highlight')));
+    ['dragleave', 'drop'].forEach(n => da.addEventListener(n, () => da.classList.remove('highlight')));
+    da.addEventListener('drop', e => handleFiles({ target: { files: e.dataTransfer.files } }));
   }
 });

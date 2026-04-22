@@ -1,136 +1,178 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Belem TI — Catálogo</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./src/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Belem TI — Catálogo</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css">
 </head>
+
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="logo" id="logo-btn">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    </div>
-    <div>
-      <span class="logo-name">BELEM TI</span>
-      <span class="logo-sub">Infraestrutura &amp; Redes</span>
-    </div>
-  </div>
-  <div class="nav-r" id="nav-right"></div>
-</nav>
-
-<!-- PUBLIC -->
-<div id="view-public" class="hidden">
-  <div class="hero">
-    <div class="hero-badge"><span></span>10 anos de excelência em tecnologia</div>
-    <h1>Dispositivos e<br>equipamentos <em>TI</em></h1>
-    <p>Consultoria especializada em infraestrutura de redes, segurança e suporte técnico.</p>
-  </div>
-  <div class="page" style="padding-top:28px">
-    <div class="search-row">
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="pub-search" placeholder="Buscar dispositivo...">
+  <!-- NAV -->
+  <nav>
+    <div class="logo" id="logo-btn">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
       </div>
-    </div>
-    <div class="cat-filter" id="pub-cats"></div>
-    <div class="catalog-grid" id="pub-grid"></div>
-  </div>
-</div>
-
-<!-- LOGIN -->
-<div id="view-login" class="hidden">
-  <div class="login-wrap">
-    <div class="login-box">
-      <h2>🔐 Painel Admin</h2>
-      <p>Acesso restrito ao gerenciamento do catálogo</p>
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="login-pass" placeholder="••••••••">
-      </div>
-      <div class="login-err" id="login-err">Senha incorreta</div>
-      <button class="btn btn-primary" style="width:100%;margin-top:16px" id="btn-login">Entrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADMIN -->
-<div id="view-admin" class="hidden">
-  <div class="page">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
       <div>
-        <h1 style="font-size:26px;font-weight:800">Gerenciar Catálogo</h1>
-        <p style="color:var(--text2);font-size:13px;margin-top:4px"><span id="adm-count">0</span> produtos cadastrados</p>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" id="btn-logout">Sair do admin</button>
+        <span class="logo-name">BELEM TI</span>
+        <span class="logo-sub">Infraestrutura &amp; Redes</span>
       </div>
     </div>
-    <div class="admin-layout">
-      <div class="panel">
-        <div class="panel-title"><div class="dot"></div><span id="form-title">Novo Produto</span></div>
-        <input type="hidden" id="edit-id">
-        <div class="form-group">
-          <label>Nome</label>
-          <input type="text" id="f-nome" placeholder="Ex: Switch TP-Link 24 portas">
-        </div>
-        <div class="form-group">
-          <label>Categoria</label>
-          <input type="text" id="f-cat" placeholder="Ex: Redes, Servidor, Cabo…">
-        </div>
-        <div class="form-group">
-          <label>Preço (R$)</label>
-          <div class="price-wrap"><span>R$</span>
-            <input type="number" id="f-preco" placeholder="0,00" step="0.01" min="0">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descrição</label>
-          <textarea id="f-desc" placeholder="Especificações, condição, detalhes…"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Fotos do Produto</label>
-          <div class="upload-area" id="drop-area">
-            <input type="file" id="f-images" multiple accept="image/*" class="hidden">
-            <label for="f-images" class="upload-label">
-              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              <span>Clique ou arraste fotos aqui</span>
-            </label>
-          </div>
-          <div id="upload-previews" class="previews-grid"></div>
-        </div>
-        <button class="btn btn-primary" style="width:100%" id="btn-save">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span id="f-btn-txt">Salvar Produto</span>
-        </button>
-        <div id="cancel-wrap" style="display:none;margin-top:8px">
-          <button class="btn btn-ghost" style="width:100%" id="btn-cancel">Cancelar edição</button>
+  </nav>
+
+  <!-- PUBLIC -->
+  <div id="view-public" class="hidden">
+    <div class="hero">
+      <div class="hero-badge"><span></span>10 anos de excelência em tecnologia</div>
+      <h1>Dispositivos e<br>equipamentos <em>TI</em></h1>
+      <p>Consultoria especializada em infraestrutura de redes, segurança e suporte técnico.</p>
+    </div>
+    <div class="page" style="padding-top:28px">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" id="pub-search" placeholder="Buscar dispositivo...">
         </div>
       </div>
-      <div class="admin-list" id="adm-list">
-        <div class="empty">
-          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          <p>Nenhum produto ainda.</p>
+      <div class="cat-filter" id="pub-cats"></div>
+      <div class="catalog-grid" id="pub-grid"></div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="view-login" class="hidden">
+    <div class="login-wrap">
+      <div class="login-box">
+        <h2>🔐 Painel Admin</h2>
+        <p>Acesso restrito ao gerenciamento do catálogo</p>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="login-pass" placeholder="••••••••">
+        </div>
+        <div class="login-err" id="login-err">Senha incorreta</div>
+        <button class="btn btn-primary" style="width:100%;margin-top:16px" id="btn-login">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" class="hidden">
+    <div class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+        <div>
+          <h1 style="font-size:26px;font-weight:800">Gerenciar Catálogo</h1>
+          <p style="color:var(--text2);font-size:13px;margin-top:4px"><span id="adm-count">0</span> produtos cadastrados
+          </p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" id="btn-logout">Sair do admin</button>
+        </div>
+      </div>
+      <div class="admin-layout">
+        <div class="panel">
+          <div class="panel-title">
+            <div class="dot"></div><span id="form-title">Novo Produto</span>
+          </div>
+          <input type="hidden" id="edit-id">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="f-nome" placeholder="Ex: Switch TP-Link 24 portas">
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="f-cat" placeholder="Ex: Redes, Servidor, Cabo…">
+          </div>
+          <div class="form-group">
+            <label>Preço (R$)</label>
+            <div class="price-wrap"><span>R$</span>
+              <input type="number" id="f-preco" placeholder="0,00" step="0.01" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="f-desc" placeholder="Especificações, condição, detalhes…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Fotos do Produto</label>
+            <div class="upload-area" id="drop-area">
+              <input type="file" id="f-images" multiple accept="image/*" class="hidden">
+              <label for="f-images" class="upload-label">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                <span>Clique ou arraste fotos aqui</span>
+              </label>
+            </div>
+            <div id="upload-previews" class="previews-grid"></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" id="btn-save">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            <span id="f-btn-txt">Salvar Produto</span>
+          </button>
+          <div id="cancel-wrap" style="display:none;margin-top:8px">
+            <button class="btn btn-ghost" style="width:100%" id="btn-cancel">Cancelar edição</button>
+          </div>
+        </div>
+        <div class="admin-list" id="adm-list">
+          <div class="empty">
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <path d="M8 21h8M12 17v4" />
+            </svg>
+            <p>Nenhum produto ainda.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- GALLERY MODAL -->
-<div id="gallery-modal" class="modal hidden">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeGallery()">✕</button>
-    <div class="modal-gallery" id="modal-gallery-content"></div>
+  <!-- PRODUCT DETAIL MODAL -->
+  <div id="product-modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+      <div class="product-detail-grid">
+        <div class="product-detail-visuals">
+          <div class="main-img-wrap" id="modal-main-img">
+            <!-- Main Image -->
+          </div>
+          <div class="thumbnails-grid" id="modal-thumbnails">
+            <!-- Thumbnails -->
+          </div>
+        </div>
+        <div class="product-detail-info">
+          <div id="modal-cat" class="card-cat"></div>
+          <h2 id="modal-name"></h2>
+          <div id="modal-price" class="card-price"></div>
+          <div class="modal-desc-wrap">
+            <label>Descrição</label>
+            <div id="modal-desc" class="modal-desc-content"></div>
+          </div>
+          <div id="modal-action-wrap" style="margin-top:auto;padding-top:24px">
+            <!-- WhatsApp Button -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="toast"></div>
+  <div id="toast"></div>
 
-<script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>
