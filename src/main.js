@@ -33,22 +33,27 @@ function goPublic() {
 
 function showLogin() {
   show('view-login');
-  G('nav-right').innerHTML = `<button class="btn btn-ghost btn-sm" id="btn-back">← Voltar</button>`;
-  G('btn-back').addEventListener('click', goPublic);
+  const nr = G('nav-right');
+  if (nr) {
+    nr.innerHTML = `<button class="btn btn-ghost btn-sm" id="btn-back">← Voltar</button>`;
+    G('btn-back').addEventListener('click', goPublic);
+  }
 }
 
-function showAdmin() {
+async function showAdmin() {
   show('view-admin');
-  G('nav-right').innerHTML = `<span style="font-size:12px;color:var(--text2);padding:0 4px">● Admin</span>`;
+  const nr = G('nav-right');
+  if (nr) nr.innerHTML = `<span style="font-size:12px;color:var(--text2);padding:0 4px">● Admin</span>`;
+  await carregar();
   renderAdmin();
 }
 
-function doLogin() {
+async function doLogin() {
   const pass = G('login-pass').value;
   const stored = import.meta.env.VITE_ADMIN_PASSWORD;
 
   if (pass === stored) {
-    adminLogged = true; G('login-err').style.display = 'none'; G('login-pass').value = ''; showAdmin();
+    adminLogged = true; G('login-err').style.display = 'none'; G('login-pass').value = ''; await showAdmin();
   } else { G('login-err').style.display = 'block' }
 }
 
